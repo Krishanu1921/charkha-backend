@@ -1,7 +1,9 @@
 // dotenv.config({
 //     path : "./.env"
 // });
+import Razorpay from "razorpay";
 import "dotenv/config";
+console.log(process.env.MONGODB_URI); 
 import express from "express";
 import dotenv from "dotenv";
 import pkg from "jsonwebtoken";
@@ -22,6 +24,10 @@ import orderRouter from "./src/routes/order.routes.js";
 const {TokenExpiredError} = pkg;
 
 const app = express();
+const razorpay = new Razorpay({
+    key_id: "rzp_test_Ss8IowTZWA1S8P",
+    key_secret: "PaTPgIX6NJuk0Zii3vcrUVB7"
+});
 const port = process.env.PORT;
 
 app.use(cors({
@@ -38,17 +44,30 @@ app.use("/api/v1/product", productRouter);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/order", orderRouter);
+app.post("/create-order", async (req, res) => {
 
-connectDB().then(()=>{
-    app.listen(port, ()=>{
-    console.log(`Server is running at PORT : ${port}`);
-});
-}
-).catch((error)=>{
-    console.log(`MongoDB connection error : ${error}`);
-    process.exit(1);
+    try {
+
+        const options = {
+            amount: 500 * 100,
+            currency: "INR",
+            receipt: "receipt_order_1"
+        };
+
+        const order = await razorpay.orders.create(options);
+
+        res.json(order);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Error creating order");
+    }
+
 });
 
+app.listen(8000, () => {
+    console.log("Server running on port 8000");
+});
 
 
 
