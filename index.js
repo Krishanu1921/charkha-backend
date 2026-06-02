@@ -1,9 +1,7 @@
 // dotenv.config({
 //     path : "./.env"
 // });
-import Razorpay from "razorpay";
 import "dotenv/config";
-console.log(process.env.MONGODB_URI); 
 import express from "express";
 import dotenv from "dotenv";
 import pkg from "jsonwebtoken";
@@ -20,14 +18,19 @@ import productRouter from "./src/routes/product.routes.js";
 import cartRouter from "./src/routes/cart.routes.js";
 import userRouter from "./src/routes/user.routes.js";
 import orderRouter from "./src/routes/order.routes.js";
+import paymentRouter from "./src/routes/payment.routes.js";
 
 const {TokenExpiredError} = pkg;
 
 const app = express();
+
+/*console.log("KEY ID:", process.env.RAZORPAY_KEY_ID);
+console.log("KEY SECRET:", process.env.RAZORPAY_KEY_SECRET);
+
 const razorpay = new Razorpay({
-    key_id: "rzp_test_Ss8IowTZWA1S8P",
-    key_secret: "PaTPgIX6NJuk0Zii3vcrUVB7"
-});
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+});*/
 const port = process.env.PORT;
 
 app.use(cors({
@@ -44,7 +47,8 @@ app.use("/api/v1/product", productRouter);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/order", orderRouter);
-app.post("/create-order", async (req, res) => {
+app.use("/api/payment", paymentRouter);
+/*app.post("/create-order", async (req, res) => {
 
     try {
 
@@ -63,7 +67,7 @@ app.post("/create-order", async (req, res) => {
         res.status(500).send("Error creating order");
     }
 
-});
+});*/
 
 app.listen(8000, () => {
     console.log("Server running on port 8000");
