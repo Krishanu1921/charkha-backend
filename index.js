@@ -1,16 +1,14 @@
-// dotenv.config({
-//     path : "./.env"
-// });
-import "dotenv/config";
+import "./src/config/loadEnv.js";
 import express from "express";
-import dotenv from "dotenv";
 import pkg from "jsonwebtoken";
-import cors from 'cors'
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-
+console.log("PORT =", process.env.PORT);
+console.log("MONGODB_URI =", process.env.MONGODB_URI);
+console.log("RAZORPAY_KEY_ID =", process.env.RAZORPAY_KEY_ID);
 
 import connectDB from "./src/config/db.js";
-import cookieParser from "cookie-parser";
 
 import authRouter from "./src/routes/auth.routes.js";
 import { categoryRouter } from "./src/routes/category.routes.js";
@@ -20,27 +18,24 @@ import userRouter from "./src/routes/user.routes.js";
 import orderRouter from "./src/routes/order.routes.js";
 import paymentRouter from "./src/routes/payment.routes.js";
 
-const {TokenExpiredError} = pkg;
+const { TokenExpiredError } = pkg;
 
 const app = express();
+const port = process.env.PORT || 8000;
 
-/*console.log("KEY ID:", process.env.RAZORPAY_KEY_ID);
-console.log("KEY SECRET:", process.env.RAZORPAY_KEY_SECRET);
+// Middlewares
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || true,
+    credentials: true,
+  })
+);
 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-});*/
-const port = process.env.PORT;
-
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true,        // ← required for cookies to work
-}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/category", categoryRouter);
 app.use("/api/v1/product", productRouter);
@@ -48,31 +43,24 @@ app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/order", orderRouter);
 app.use("/api/payment", paymentRouter);
-/*app.post("/create-order", async (req, res) => {
 
-    try {
-
-        const options = {
-            amount: 500 * 100,
-            currency: "INR",
-            receipt: "receipt_order_1"
-        };
-
-        const order = await razorpay.orders.create(options);
-
-        res.json(order);
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).send("Error creating order");
-    }
-
-});*/
-
-app.listen(8000, () => {
-    console.log("Server running on port 8000");
+// Health Check Route
+app.get("/", (req, res) => {
+    res.send("Charkha backend is running 🚀");
 });
 
+// Start Server - Connect DB first, then start listening
+(async () => {
+  try {
+    await connectDB();
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+})();
 
 
 

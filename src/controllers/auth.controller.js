@@ -56,20 +56,23 @@ const loginUser = async(req, res)=>{
     const accessToken = await user.generateAccessToken();
     const refreshToken = await user.generateRefreshToken();
     
+    
+
     user.refreshToken = refreshToken;
     await user.save({validateBeforeSave : false});
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
-    const options = {
-        httpOnly : true,
-        secure : true
-    }
+    const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    };
 
     return res
         .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
+        .cookie("accessToken", accessToken, cookieOptions)
+        .cookie("refreshToken", refreshToken, cookieOptions)
         .json(
             {
                 success : true,
@@ -95,15 +98,16 @@ const logoutUser = async(req, res)=>{
             }
         );
     
-        const options = {
-            httpOnly : true,
-            secure : true
-        }
+        const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        };
     
         return res
             .status(200)
-            .clearCookie("accessToken", options)
-            .clearCookie("refreshToken", options)
+            .clearCookie("accessToken", cookieOptions)
+            .clearCookie("refreshToken", cookieOptions)
             .json(
                 {
                     success : true,
@@ -151,15 +155,16 @@ const refreshAccessToken = async(req, res)=>{
         }
         const accessToken = await user.generateAccessToken();
     
-        const options = {
-            httpOnly : true,
-            secure : true
-        }
-    
-    
+        const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        };
+
+
         return res
             .status(200)
-            .cookie("accessToken", accessToken, options)
+            .cookie("accessToken", accessToken, cookieOptions)
             .json(
                 {
                     success : true,
